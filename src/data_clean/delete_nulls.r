@@ -5,5 +5,5 @@ delete_nulls <- function(data) {
   data$Total.Volume[
     is.na(data$Total.Volume)
   ] <- mean(data$Total.Volume, na.rm = TRUE)
-  return(data)
+  return(na.omit(data))
 }

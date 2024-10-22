@@ -7,7 +7,7 @@ source("src/utils/misc_info.r")
 
 # install all package need for the project
 pkg_load(packages = c(
-  "dbscan", "ggplot2", "rpart",
+  "dbscan", "ggplot2", "rpart", "nnet",
   "neuralnet", "forecast", "lpSolve", "EnvStats", "rpart.plot", "dplyr"
 ))
 
@@ -46,9 +46,9 @@ print(unique(data$type))
 
 # part 1: data clean
 load_sources("src/data_clean/")
-data <- delete_duplicates(data)
 data <- delete_nulls(data)
-data <- data_scaling(data)
+data <- delete_duplicates(data)
+# data <- data_scaling(data)
 data <- date_format(data)
 
 print(str(data))
@@ -57,9 +57,10 @@ print(str(data))
 load_sources("src/data_transformation/")
 
 data <- data_standardization(data)
-data <- variable_discretization(data)
+# data <- variable_discretization(data)
 data <- create_temp_vars(data)
 data <- bias_reduction(data)
+data <- variable_encoding(data)
 
 print(str(data))
 
@@ -67,15 +68,37 @@ print(str(data))
 
 # part 3.1 descriptives
 load_sources("src/data_mining/descriptives")
-print(type_segmentation(data))
-print(type_segmentation(data))
-print(type_segmentation(data))
-print(type_segmentation(data))
-
-
+# print(eda(data))
+# print(type_segmentation(data))
+# print(analysis_by_region(data))
+# print(temporal_analysis(data))
+# print(correlation_analysis(data))
 
 # part 3.2 clustering
+load_sources("src/data_mining/clustering")
+
+numeric_data <- data[, c(
+  "X", "AveragePrice", "Total.Volume", "X4046", "X4225", "X4770",
+  "Total.Bags", "Small.Bags", "XLarge.Bags", "Log_TotalVolume"
+)]
+# print(k_means_clustering(numeric_data))
+# print(hierarchical_clustering(numeric_data))
+# print(DBSCAN(numeric_data))
 
 # part 3.3 predictives
+load_sources("src/data_mining/predictives")
+
+# print(ARIMA(numeric_data)) # no ejecutar por alto consumo de recursos
+
+print(multiple_linear_regression(data))
+print(neural_networks(data))
+# print(logistic_regression(data))
+print(decision_trees(data))
+
 
 # part 3.4 prescriptives
+
+load_sources("src/data_mining/prescriptives")
+print(decision_analysis(data))
+print(resource_optimization(data))
+print(scenario_simulation(data))
