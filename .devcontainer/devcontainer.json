@@ -20,7 +20,7 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "R -q -e 'install.packages(\"tidyverse\")'",
+  "postCreateCommand": "R -q -e 'install.packages(\"httpgd\")'",
   // Configure tool-specific properties.
   "customizations": {
     // Settings for VS Code.
