@@ -84,27 +84,27 @@ numeric_data <- data[, c(
   "X", "AveragePrice", "Total.Volume", "X4046", "X4225", "X4770",
   "Total.Bags", "Small.Bags", "XLarge.Bags", "Log_TotalVolume"
 )]
-# print(k_means_clustering(numeric_data))
-# print(hierarchical_clustering(numeric_data))
-# print(DBSCAN(numeric_data))
+print(k_means_clustering(numeric_data))
+print(hierarchical_clustering(numeric_data))
+print(DBSCAN(numeric_data))
 
 # part 3.3: predictives
 load_sources("src/data_mining/predictives")
 
 # print(ARIMA(numeric_data)) # no ejecutar por alto consumo de recursos
 
-# print(multiple_linear_regression(data))
-# print(neural_networks(data))
-# print(logistic_regression(data))
-# print(decision_trees(data))
+print(multiple_linear_regression(data))
+print(neural_networks(data))
+print(logistic_regression(data))
+print(decision_trees(data))
 
 
 # part 3.4: prescriptives
 
 load_sources("src/data_mining/prescriptives")
-# print(decision_analysis(data))
-# print(resource_optimization(data))
-# print(scenario_simulation(data))
+print(decision_analysis(data))
+print(resource_optimization(data))
+print(scenario_simulation(data))
 
 
 # part 4: math operations
