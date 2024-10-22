@@ -7,10 +7,10 @@ source("src/utils/misc_info.r")
 # install all package need for the project
 pkg_load(packages = c(
   "dbscan", "ggplot2", "rpart",
-  "neuralnet", "forecast", "lpSolve", "EnvStats", "rpart.plot", "dplyr"
+  "neuralnet", "forecast", "lpSolve", "EnvStats", "rpart.plot", "dplyr", "plyr"
 ))
 
-
+library(plyr)
 library(ggplot2)
 library(dplyr)
 
@@ -64,6 +64,7 @@ data <- data_standardization(data)
 data <- create_temp_vars(data)
 data <- bias_reduction(data)
 data <- variable_encoding(data)
+data <- data_index(data)
 
 print(str(data))
 
@@ -86,8 +87,7 @@ numeric_data <- data[, c(
 )]
 print(k_means_clustering(numeric_data))
 print(hierarchical_clustering(numeric_data))
-print(DBSCAN(numeric_data))
-
+# print(DBSCAN(numeric_data)) # warnings
 # part 3.3: predictives
 load_sources("src/data_mining/predictives")
 
@@ -102,10 +102,9 @@ print(decision_trees(data))
 # part 3.4: prescriptives
 
 load_sources("src/data_mining/prescriptives")
-print(decision_analysis(data))
-print(resource_optimization(data))
-print(scenario_simulation(data))
-
+# print(decision_analysis(data))
+# print(resource_optimization(data))
+# print(scenario_simulation(data))
 
 # part 4: math operations
 
@@ -168,20 +167,101 @@ cat("resumen_numericas", resumen_numericas(data, c(
 # part 5: Vectores, Dataframes and plots
 
 # part 5.1: Vectores
-fechas <- seq.Date(
-  from = as.Date("2015-01-01"),
-  to = as.Date("2020-12-31"), by = "day"
-)
-precios <- runif(length(fechas), min = 1, max = 5)
-volumen <- round(runif(length(fechas), min = 100, max = 1000))
+print(head(data))
+total_income_per_hass_4096 <- total_income_per_hass_size(data, 4046)
+total_income_per_hass_4225 <- total_income_per_hass_size(data, 4225)
+total_income_per_hass_4770 <- total_income_per_hass_size(data, 4770)
+
+total_income <- total_income(data)
+total_income_per_volumen <- total_income_per_volumen(data)
 
 # part 5.2: DataFrames
-df1 <- data.frame(
-  Date = fechas, AveragePrice = precios, TotalVolume = volumen
-)
-df2 <- data.frame(
-  Date = fechas, AveragePrice = runif(length(fechas), min = 1, max = 5)
+df1 <- delete_duplicates(data.frame(
+  id = data$id,
+  Date = data$Date,
+  total_income = total_income,
+  total_income_per_volumen = total_income_per_volumen
+))
+df2 <- delete_duplicates(data.frame(
+  Date = data$Date,
+  id = data$id, total_income_per_hass_4096 = total_income_per_hass_4096,
+  total_income_per_hass_4225 = total_income_per_hass_4225,
+  total_income_per_hass_4770 = total_income_per_hass_4770
+))
+
+df3 <- inner_join(x = data, y = df1, by = "id")
+
+df_final <- inner_join(x = data, y = df3, by = "id")
+
+print(head(df_final))
+
+# part 5.1: Plots
+
+# histograma de data historica del precio de la palta
+# responde a: ¿Existen patrones estacionales significativos en los precios del aguacate?
+print(ggplot(df_final, aes(x = AveragePrice.x)) +
+  geom_histogram(binwidth = 0.1, fill = "blue", alpha = 0.7) +
+  labs(title = "Histogram of Average Price") +
+  xlab("Average Price") +
+  ylab("Frequency"))
+
+# diagrama de puntos del total del volumen sobre el precio
+# responde a: ¿Cómo influye el volumen de ventas en el precio del aguacate?
+print(ggplot(df_final, aes(x = Total.Volume.x, y = AveragePrice.x)) +
+  geom_point(color = "red") +
+  labs(title = "Scatter Plot of Total Volume vs. Average Price") +
+  xlab("Total Volume") +
+  ylab("Average Price"))
+
+# diagrama de cajas por tipo de palta
+# responde a: ¿Existe una diferencia significativa en los precios entre los cultivos orgánicos y convencionales?
+print(ggplot(df_final, aes(x = type.x, y = AveragePrice.x)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Average Price by Type") +
+  xlab("Type") +
+  ylab("Average Price"))
+
+# volumen de paltas sobre tiempo
+
+print(ggplot(df_final, aes(x = Date.x, y = Total.Volume.x)) +
+  geom_line() +
+  labs(title = "Line Chart of Total Volume Over Time") +
+  xlab("Date") +
+  ylab("Total Volume"))
+
+print(ggplot(df_final, aes(x = Date.x, y = total_income)) +
+  geom_line(color = "darkgreen") +
+  labs(title = "Total Income Over Time") +
+  xlab("Date") +
+  ylab("Total Income"))
+
+print(
+  ggplot(df_final, aes(x = interaction(type.x, year.x), y = AveragePrice.x)) +
+    geom_boxplot() +
+    labs(title = "Average Price by Type and Year") +
+    xlab("Type and Year") +
+    ylab("Average Price")
 )
 
-df_final <- rbind(data, df1, df2)
-head(df_final)
+print(
+  ggplot(df_final, aes(x = Total.Volume.x, y = small_bag_pct.x)) +
+    geom_point(color = "orange") +
+    labs(title = "Small Bag Percentage vs. Total Volume") +
+    xlab("Total Volume") +
+    ylab("Small Bag Percentage")
+)
+
+print(
+  ggplot(df_final, aes(x = region_code.x, y = Total.Bags.x)) +
+    geom_bar(stat = "summary", fun = "sum", fill = "skyblue") +
+    labs(title = "Total Bags by Region") +
+    xlab("Region") +
+    ylab("Total Bags")
+)
+print(
+  ggplot(df_final, aes(x = most_selled_size.x, y = AveragePrice.x)) +
+    geom_boxplot() +
+    labs(title = "Average Price by Type and Year") +
+    xlab("Tamaño") +
+    ylab("Precio Promedio")
+)
